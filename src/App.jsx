@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { BackSide, RepeatWrapping, TextureLoader } from "three";
 import { OrbitControls } from "@react-three/drei";
+import PanoramaViewer from "./components/PanoramaViewer";
 
 // Flying sphere intro animation
 function FlyInSphere({ panoUrl, onFinished }) {
@@ -13,26 +14,27 @@ function FlyInSphere({ panoUrl, onFinished }) {
   // // ✅ Flip horizontally from the very beginning
   React.useEffect(() => {
     texture.wrapS = RepeatWrapping;
-    texture.repeat.x = -1;   // mirror horizontally
-    texture.offset.x = 1;    // keep seam aligned
+    texture.repeat.x = -1; // mirror horizontally
+    texture.offset.x = 1; // keep seam aligned
     texture.needsUpdate = true;
   }, [texture]);
 
   useFrame(() => {
     if (progress < 1) {
-      const rawT = progress + 0.0030;
+      const rawT = progress + 0.003;
       const t = Math.min(rawT, 1);
       setProgress(t);
-      const ease = t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       if (mesh.current) mesh.current.rotation.y += 0.005;
-      const startY = 180, endY = 0;
+      const startY = 180,
+        endY = 0;
       camera.position.y = startY + (endY - startY) * ease;
-      const startZ = 0, endZ = 10; 
+      const startZ = 0,
+        endZ = 10;
       camera.position.z = startZ + (endZ - startZ) * ease;
       camera.position.x = startZ + (endZ - startZ) * ease;
-      const startFov = 150, endFov = 75;
+      const startFov = 150,
+        endFov = 75;
       camera.fov = startFov + (endFov - startFov) * ease;
       camera.updateProjectionMatrix();
       if (t >= 1 && onFinished) onFinished();
@@ -64,7 +66,6 @@ function FovZoom({ min = 25, max = 90, step = 0.9 }) {
 
 // ----------- Loader Overlay -----------
 function FullscreenSpinner() {
-
   return (
     <div
       style={{
@@ -96,7 +97,13 @@ function FullscreenSpinner() {
           100% { transform: rotate(360deg); }
         }
       `}</style>
-      <p style={{ marginTop: 16, fontFamily: "Poppins, sans-serif", fontSize: 16 }}>
+      <p
+        style={{
+          marginTop: 16,
+          fontFamily: "Poppins, sans-serif",
+          fontSize: 16,
+        }}
+      >
         Loading scene…
       </p>
     </div>
@@ -118,19 +125,32 @@ export default function App() {
         overflow: "hidden",
       }}
     >
-     {showLoader && <FullscreenSpinner />}
-      <Canvas
-        camera={{ position: [0, 180, 0], fov: 150 }}
-      >
-        <OrbitControls
-          ref={controlsRef}
-          enabled={true}          // or tie to your state
-          enablePan={false}
-          enableZoom={false}      // 👈 turn off dolly-zoom
-        />
-        <FovZoom min={20} max={90} step={0.9} />
-        <FlyInSphere panoUrl={panoUrl} onFinished={()=>{setShowLoader(false)}} />
-      </Canvas>
+      <PanoramaViewer />
     </div>
+    // <div
+    //   style={{
+    //     width: "100vw",
+    //     height: "100vh",
+    //     margin: 0,
+    //     overflow: "hidden",
+    //   }}
+    // >
+    //   {showLoader && <FullscreenSpinner />}
+    //   <Canvas camera={{ position: [0, 180, 0], fov: 150 }}>
+    //     <OrbitControls
+    //       ref={controlsRef}
+    //       enabled={true} // or tie to your state
+    //       enablePan={false}
+    //       enableZoom={false} // 👈 turn off dolly-zoom
+    //     />
+    //     <FovZoom min={20} max={90} step={0.9} />
+    //     <FlyInSphere
+    //       panoUrl={panoUrl}
+    //       onFinished={() => {
+    //         setShowLoader(false);
+    //       }}
+    //     />
+    //   </Canvas>
+    // </div>
   );
 }
